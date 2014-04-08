@@ -1,0 +1,221 @@
+
+		
+        <div id="map" style="position: absolute; position:absolute; top: 10%; bottom:20%; left:300px; width:800px; height:500px; border:3px solid gray; border-radius: 12px;"></div>
+        
+        
+        
+        
+        <script>
+
+		
+
+		function post_to_url(path, params, method) {
+		    method = method || "post"; // Set method to post by default, if not specified.
+
+		    // The rest of this code assumes you are not using a library.
+		    // It can be made less wordy if you use one.
+		    var form = document.createElement("form");
+		    form.setAttribute("method", method);
+		    form.setAttribute("action", path);
+
+		    for(var key in params) {
+		        if(params.hasOwnProperty(key)) {
+		            var hiddenField = document.createElement("input");
+		            hiddenField.setAttribute("type", "hidden");
+		            hiddenField.setAttribute("name", key);
+		            hiddenField.setAttribute("value", params[key]);
+
+		            form.appendChild(hiddenField);
+		         }
+		    }
+
+		    document.body.appendChild(form);
+		    form.submit();
+		}
+		
+		
+		
+		
+		
+			
+        </script>
+
+		
+        <script type="text/javascript">
+            var map;
+            var optionsLayer;
+            var pathLayer;
+            var sourcePoints;
+			var destPoints;
+			
+			var flag = 0;
+            
+			var source;
+			var dest;
+			
+            function initmap(lat, lon) { // this lat lon we calulate from the xml file root elements (we need to get the center of a a box with given bounding lon and lat)
+                map = new L.Map('map');
+                var hull = new L.LatLng(lat, lon);
+                var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+                var osmAttrib=' Copyright: Sapkota' ;
+                var osm = new L.TileLayer(osmUrl,{maxZoom:17,attribution:osmAttrib});
+                map.setView(hull,17);
+                map.addLayer(osm);
+            }
+            
+            
+            function addPathLayer(arrayOfNodes) {
+                var way = {
+                    "type": "Feature",
+                    "properties": {
+                        "style": {
+                            "color": "#004070",
+                            "weight": 4,
+                            "opacity": 1
+                        }
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": arrayOfNodes,
+                    }
+                };
+                
+                pathLayer = new L.geoJson(way);
+                map.addLayer(pathLayer);
+            }
+            
+            
+            
+            
+            function getCircles(arrayOfNodes) {
+                var array = new Array();
+                for (var i = 0; i<arrayOfNodes.length; i++){
+                    array[i] = {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": arrayOfNodes[i]
+                        }
+                    }
+                }
+                return array;
+            }
+            
+            
+            
+            
+            function onEachFeature(feature, layer) {
+                
+                (function(layer, properties) {
+                 layer.on("click", function (e) {
+							clicked(e);
+                          //document.getElementById('text').innerHTML= e.latlng.toString(); // change this
+                          //removeLayer(optionsLayer);
+                          });
+                 })(layer, feature.properties);
+            }
+            
+            
+            
+            
+            var geojsonMarkerOptions = {
+                radius: 8,
+                fillColor: "#ff7800",
+                color: "#000",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            };
+            
+            
+            
+            
+            function addOptionsLayer(arrayOfNodes) {
+				//map.setView(new L.LatLng(arrayOfNodes[0][1], arrayOfNodes[0][0]), 17)
+                optionsLayer = new L.geoJson(getCircles(arrayOfNodes), {
+                                             pointToLayer: function (feature, latlng) {
+                                             return L.circleMarker(latlng, geojsonMarkerOptions);
+                                             }, onEachFeature: onEachFeature
+                                             });
+                map.addLayer(optionsLayer);
+            }
+            
+            
+            
+            function removeLayer(layer) {
+                map.removeLayer(layer);
+            }
+
+			function clicked(e) {
+				if (flag == 0) {
+					flag = 1;
+					removeLayer(optionsLayer);
+					L.marker(e.latlng).addTo(map);
+					source = new Array();
+					source.push(e.target.getLatLng().lng.toString());
+					source.push(e.target.getLatLng().lat.toString());
+					dest()
+				}
+				else {
+					removeLayer(optionsLayer);
+					L.marker(e.latlng).addTo(map);
+					dest = new Array();
+					dest.push(e.target.getLatLng().lng.toString());
+					dest.push(e.target.getLatLng().lat.toString());
+					overlay()
+				}
+			}
+            
+			function overlay() {
+				post_to_url('overlay', {'source':source, 'dest':dest});
+			}
+           
+     
+           	function source() {
+				sourcePoints = new Array();
+
+				<% if !@sourcePoints.blank? %>
+					<% for item in @sourcePoints %>
+					var latlon = new Array()
+					latlon.push("<%= item[0] %>")
+					latlon.push("<%= item[1] %>")
+					sourcePoints.push(latlon)
+					<% end %>
+				<% else %>
+
+				<% end %>
+
+				initmap(sourcePoints[0][1], sourcePoints[0][0]);
+
+	            addOptionsLayer(sourcePoints);
+		   	}
+		
+			function dest() {
+				destPoints = new Array();
+
+				<% if !@destPoints.blank? %>
+					<% for item in @destPoints %>
+					var latlon = new Array()
+					latlon.push("<%= item[0] %>")
+					latlon.push("<%= item[1] %>")
+					destPoints.push(latlon)
+					<% end %>
+				<% else %>
+
+				<% end %>
+
+				//initmap(sourcePoints[0][1], sourcePoints[0][0]);
+				map.setView(new L.LatLng(destPoints[0][1], destPoints[0][0]), 17)
+	            addOptionsLayer(destPoints);
+			}
+			
+			  
+			
+			source();
+			
+      </script>
+      </div>
+
+
+
+

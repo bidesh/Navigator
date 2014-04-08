@@ -1,0 +1,126 @@
+
+        
+        <div class="box">
+        <%= image_tag("logo_navigate.jpg") %> <br> <br>
+        <div class="ui-widget">
+            <label for="from">From: </label> <br>
+            <input id="from" />
+        </div>
+        
+        <div class="ui-widget">
+            <label for="to">To: </label> <br>
+            <input id="to" />
+        </div>
+        
+        <button id="getDirections">Get Directions!</button>
+        
+        
+        <div id="map" style="position: absolute; position:absolute; top: -1.8%; bottom:20%; left:300px; width:800px; height:500px; border:3px solid gray; border-radius: 12px;"></div>
+        
+        <script>
+
+		function getDirections(source, dest) {
+			post_to_url('/students/clicked', {'source':source, 'dest':dest});
+	    }
+           
+
+		function post_to_url(path, params, method) {
+		    method = method || "post"; // Set method to post by default, if not specified.
+
+		    // The rest of this code assumes you are not using a library.
+		    // It can be made less wordy if you use one.
+		    var form = document.createElement("form");
+		    form.setAttribute("method", method);
+		    form.setAttribute("action", path);
+
+		    for(var key in params) {
+		        if(params.hasOwnProperty(key)) {
+		            var hiddenField = document.createElement("input");
+		            hiddenField.setAttribute("type", "hidden");
+		            hiddenField.setAttribute("name", key);
+		            hiddenField.setAttribute("value", params[key]);
+
+		            form.appendChild(hiddenField);
+		         }
+		    }
+
+		    document.body.appendChild(form);
+		    form.submit();
+		}
+		
+		
+		
+		
+			var availableTags = new Array();
+			
+			<% if !@names.blank? %>
+				<% for item in @names %>
+				availableTags.push("<%= item %>")
+				<% end %>
+			<% else %>
+			
+			<% end %>
+ 					
+            
+			
+            
+            
+			 $(function() {
+
+
+
+			      var from  = $( "#from" ).autocomplete({
+			                                source: availableTags
+			                                });
+
+
+			      var to =  $( "#to" ).autocomplete({
+			                                source: availableTags
+			                                });
+
+
+			      $( "#getDirections" ).click(function() {
+			                            getDirections(from.val(), to.val());
+
+			                                    });
+
+			                    });
+			
+			
+        </script>
+
+		
+        <script type="text/javascript">
+            var map;
+            
+            
+			
+            function initmap(lat, lon) { // this lat lon we calulate from the xml file root elements (we need to get the center of a a box with given bounding lon and lat)
+                map = new L.Map('map');
+                var hull = new L.LatLng(lat, lon);
+                var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+                var osmAttrib=' Copyright: Navigator' ;
+                var osm = new L.TileLayer(osmUrl,{maxZoom:17,attribution:osmAttrib});
+                map.setView(hull,17);
+                map.addLayer(osm);
+            }
+            
+            
+            
+
+				initmap(<%= @focus[0] %>, <%= @focus[1] %>);
+				
+			
+			
+      </script>
+	</div>
+
+	<div class="uploadbox">
+	<p style="margin: 8px 0 2px 15px;">
+	 Upload data file. OSM .xml file.
+	<%= form_tag("/students/uploadXML", multipart: true) do |form| %>
+	  <%= file_field_tag( :upload) %>
+	  <%= submit_tag "Upload"%>
+	<% end %>
+	</p>
+	</div>

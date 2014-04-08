@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Navigator</title>
+
+  <%= stylesheet_link_tag    "application", :media => "all" %>
+  <%= stylesheet_link_tag "http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" %>
+  <%= stylesheet_link_tag "http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" %>
+  <%= stylesheet_link_tag "http://www.erobo.net/scripts/javascript/30/scripts/suggestions_styles.css", :media => "screen" %>    
+  <%= javascript_include_tag "application" %>
+  <%= javascript_include_tag "http://code.jquery.com/jquery-1.9.1.js" %>
+  <%= javascript_include_tag "http://code.jquery.com/ui/1.10.2/jquery-ui.js" %>
+  <%=javascript_include_tag "http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js" %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+
+<%= yield %>
+
+</body>
+</html>
